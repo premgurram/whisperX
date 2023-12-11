@@ -177,6 +177,7 @@ class FasterWhisperPipeline(Pipeline):
             audio = load_audio(audio)
 
         def data(audio, segments):
+            print(segments)
             for seg in segments:
                 f1 = int(seg['start'] * SAMPLE_RATE)
                 f2 = int(seg['end'] * SAMPLE_RATE)
@@ -184,7 +185,6 @@ class FasterWhisperPipeline(Pipeline):
                 yield {'inputs': audio[f1:f2]}
 
         vad_segments = self.vad_model({"waveform": torch.from_numpy(audio).unsqueeze(0), "sample_rate": SAMPLE_RATE})
-        print('vad_segments',vad_segments)
         vad_segments = merge_chunks(
             vad_segments,
             chunk_size,
@@ -247,13 +247,11 @@ class FasterWhisperPipeline(Pipeline):
         return {"segments": segments, "language": language}
 
     def set_default_language(self,language):
-        print('language detected first:',language)
         if language=='hi' or language=='en':
             return language
         return 'en'
 
     def detect_language(self, audio: np.ndarray):
-        print("n_samples:",N_SAMPLES)
         if audio.shape[0] < N_SAMPLES:
             print("Warning: audio is shorter than 30s, language detection may be inaccurate.")
         model_n_mels = self.model.feat_kwargs.get("feature_size")
