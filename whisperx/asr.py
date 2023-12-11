@@ -275,19 +275,18 @@ class FasterWhisperPipeline(Pipeline):
             tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                            True, task=task,
                                                            language=language)
-
-            transcription_result = self.__call__(data(segment_audio, [vad_segment]), batch_size=batch_size, num_workers=num_workers)
-
-            text = transcription_result['text']
-            if batch_size in [0, 1, None]:
-                text = text[0]
-
-            segment.append({
-                "text": text,
-                "start": round(vad_segment['start'], 3),
-                "end": round(vad_segment['end'], 3),
-                "language": language
-            })
+            for idx, out in enumerate(self.__call__(data(segment_audio, [vad_segments]), batch_size=batch_size, num_workers=num_workers)):
+                text = out['text']
+                if batch_size in [0, 1, None]:
+                    text = text[0]
+                segments.append(
+                    {
+                        "text": text,
+                        "start": round(vad_segments[idx]['start'], 3),
+                        "end": round(vad_segments[idx]['end'], 3),
+                        "language":self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
+                    }
+                )
 
             if print_progress:
                 base_progress = ((idx + 1) / len(vad_segments)) * 100
