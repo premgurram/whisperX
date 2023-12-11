@@ -245,16 +245,17 @@ class FasterWhisperPipeline(Pipeline):
 
     #     return {"segments": segments, "language": language}
     def transcribe(
-        self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, task=None, chunk_size=30,
-        print_progress=False, combined_progress=False
+        self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, chunk_size=30, print_progress = False, combined_progress=False
     ) -> TranscriptionResult:
         if isinstance(audio, str):
             audio = load_audio(audio)
 
         def data(audio, segments):
+            print(segments)
             for seg in segments:
                 f1 = int(seg['start'] * SAMPLE_RATE)
                 f2 = int(seg['end'] * SAMPLE_RATE)
+                # print(f2-f1)
                 yield {'inputs': audio[f1:f2]}
 
         vad_segments = self.vad_model({"waveform": torch.from_numpy(audio).unsqueeze(0), "sample_rate": SAMPLE_RATE})
@@ -265,7 +266,7 @@ class FasterWhisperPipeline(Pipeline):
             offset=self._vad_params["vad_offset"],
         )
 
-        results = []
+        segments: List[SingleSegment] = []
         for idx, vad_segment in enumerate(vad_segments):
             segment_audio = audio[int(vad_segment['start'] * SAMPLE_RATE):int(vad_segment['end'] * SAMPLE_RATE)]
 
@@ -282,20 +283,19 @@ class FasterWhisperPipeline(Pipeline):
             if batch_size in [0, 1, None]:
                 text = text[0]
 
-            segment = {
+            segments.append({
                 "text": text,
                 "start": round(vad_segment['start'], 3),
                 "end": round(vad_segment['end'], 3),
                 "language": language
-            }
-            results.append(segment)
+            })
 
             if print_progress:
                 base_progress = ((idx + 1) / len(vad_segments)) * 100
                 percent_complete = base_progress / 2 if combined_progress else base_progress
                 print(f"Progress: {percent_complete:.2f}%...")
 
-        return {"segments": results}
+        return {"segments": segments}
 
     def set_default_language(self,language):
         if language=='hi' or language=='en':
