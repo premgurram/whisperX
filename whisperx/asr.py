@@ -241,6 +241,10 @@ class FasterWhisperPipeline(Pipeline):
 
         return {"segments": segments, "language": language}
 
+    def set_default_language(self,language):
+        if language=='hi' or language=='en':
+            return language
+        return 'en'
 
     def detect_language(self, audio: np.ndarray):
         if audio.shape[0] < N_SAMPLES:
@@ -253,6 +257,7 @@ class FasterWhisperPipeline(Pipeline):
         results = self.model.model.detect_language(encoder_output)
         language_token, language_probability = results[0][0]
         language = language_token[2:-2]
+        language = self.model.set_default_language(language)
         print(f"Detected language: {language} ({language_probability:.2f}) in first 30s of audio...")
         return language
 
