@@ -229,7 +229,8 @@ class FasterWhisperPipeline(Pipeline):
                 {
                     "text": text,
                     "start": round(vad_segments[idx]['start'], 3),
-                    "end": round(vad_segments[idx]['end'], 3)
+                    "end": round(vad_segments[idx]['end'], 3),
+                    "language":self.detect_language(audio[round(vad_segments[idx]['start'], 3):round(vad_segments[idx]['end'], 3)])
                 }
             )
 
