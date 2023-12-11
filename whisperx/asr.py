@@ -195,14 +195,14 @@ class FasterWhisperPipeline(Pipeline):
             language = language or self.detect_language(audio)
             task = task or "transcribe"
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-                                                                self.model.model.is_multilingual, task=task,
+                                                                True, task=task,
                                                                 language=language)
         else:
             language = language or self.tokenizer.language_code
             task = task or self.tokenizer.task
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-                                                                    self.model.model.is_multilingual, task=task,
+                                                                    True, task=task,
                                                                     language=language)
                 
         if self.suppress_numerals:
@@ -262,7 +262,7 @@ class FasterWhisperPipeline(Pipeline):
         language_token, language_probability = results[0][0]
         language = language_token[2:-2]
         language = self.set_default_language(language)
-        print(f"Detected language: {language} ({language_probability:.2f}) in first 30s of audio...")
+        print(f"Detected language: {language} ({language_probability:.2f}) in first 10s of audio...")
         return language
 
 def load_model(whisper_arch,
