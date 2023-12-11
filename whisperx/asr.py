@@ -191,6 +191,7 @@ class FasterWhisperPipeline(Pipeline):
             onset=self._vad_params["vad_onset"],
             offset=self._vad_params["vad_offset"],
         )
+        print('vad_segments after merge_chunks',vad_segments)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
             task = task or "transcribe"
