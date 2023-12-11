@@ -242,6 +242,7 @@ class FasterWhisperPipeline(Pipeline):
         return {"segments": segments, "language": language}
 
     def set_default_language(self,language):
+        print('language detected first:',language)
         if language=='hi' or language=='en':
             return language
         return 'en'
@@ -250,11 +251,12 @@ class FasterWhisperPipeline(Pipeline):
         if audio.shape[0] < N_SAMPLES:
             print("Warning: audio is shorter than 30s, language detection may be inaccurate.")
         model_n_mels = self.model.feat_kwargs.get("feature_size")
-        segment = log_mel_spectrogram(audio[: N_SAMPLES],
+        segment = log_mel_spectrogram(audio,
                                       n_mels=model_n_mels if model_n_mels is not None else 80,
                                       padding=0 if audio.shape[0] >= N_SAMPLES else N_SAMPLES - audio.shape[0])
         encoder_output = self.model.encode(segment)
-        results = self.model.model.detect_language(encoder_output)
+        results = self.model.detect_language(encoder_output)
+        print("for the lang: ",results)
         language_token, language_probability = results[0][0]
         language = language_token[2:-2]
         language = self.set_default_language(language)
