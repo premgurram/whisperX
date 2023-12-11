@@ -264,6 +264,7 @@ class FasterWhisperPipeline(Pipeline):
             onset=self._vad_params["vad_onset"],
             offset=self._vad_params["vad_offset"],
         )
+        print('vad_segments: ',vad_segments)
 
         segments: List[SingleSegment] = []
         for idx, vad_segment in enumerate(vad_segments):
@@ -272,7 +273,7 @@ class FasterWhisperPipeline(Pipeline):
             language = self.detect_language(segment_audio)
             task = task or "transcribe"
 
-            tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
+            self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                            True, task=task,
                                                            language=language)
             vad_segments = [vad_segments]
