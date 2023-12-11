@@ -280,8 +280,8 @@ class FasterWhisperPipeline(Pipeline):
             print('vad_SEgment',vad_segment)
             for idx, out in enumerate(self.__call__(data(segment_audio, vad_segment), batch_size=batch_size, num_workers=num_workers)):
                 text = out['text']
-                if batch_size in [0, 1, None]:
-                    text = text[0]
+                # if batch_size in [0, 1, None]:
+                #     text = text[0]
                 segments.append(
                     {
                         "text": text,
