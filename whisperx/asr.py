@@ -278,7 +278,7 @@ class FasterWhisperPipeline(Pipeline):
                                                            language=language)
 
             transcription_result = self.__call__(data(segment_audio, [vad_segment]), batch_size=batch_size, num_workers=num_workers)
-            print(transcription_result)
+            print("text",transcription_result)
             text = transcription_result.__getitem__('text')
             if batch_size in [0, 1, None]:
                 text = text[0]
