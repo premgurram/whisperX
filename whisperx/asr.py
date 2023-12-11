@@ -277,7 +277,7 @@ class FasterWhisperPipeline(Pipeline):
                                                            True, task=task,
                                                            language=language)
 
-            for idx, out in enumerate(self.__call__(data(audio, vad_segments), batch_size=batch_size, num_workers=num_workers)):
+            for idx, out in enumerate(self.__call__(data(audio, [vad_segments]), batch_size=batch_size, num_workers=num_workers)):
                 text = out['text']
                 if batch_size in [0, 1, None]:
                     text = text[0]
