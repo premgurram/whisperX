@@ -109,7 +109,7 @@ class FasterWhisperPipeline(Pipeline):
         self.model = model
         self.tokenizer = tokenizer
         self.options = options
-        self.preset_language = language
+        self.preset_language = None
         self.suppress_numerals = suppress_numerals
         self._batch_size = kwargs.pop("batch_size", None)
         self._num_workers = 1
@@ -198,6 +198,7 @@ class FasterWhisperPipeline(Pipeline):
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 True, task=task,
                                                                 language=language)
+            #language = None
         else:
             language = language or self.tokenizer.language_code
             task = task or self.tokenizer.task
@@ -205,6 +206,7 @@ class FasterWhisperPipeline(Pipeline):
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     True, task=task,
                                                                     language=language)
+            #language = None
                 
         if self.suppress_numerals:
             previous_suppress_tokens = self.options.suppress_tokens
@@ -217,7 +219,6 @@ class FasterWhisperPipeline(Pipeline):
         segments: List[SingleSegment] = []
         batch_size = batch_size or self._batch_size
         total_segments = len(vad_segments)
-        print("this is to test",total_segments,vad_segments)
         for idx, out in enumerate(self.__call__(data(audio, vad_segments), batch_size=batch_size, num_workers=num_workers)):
             if print_progress:
                 base_progress = ((idx + 1) / total_segments) * 100
