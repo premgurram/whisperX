@@ -195,7 +195,7 @@ class FasterWhisperPipeline(Pipeline):
             language = language or self.detect_language(audio)
             task = task or "transcribe"
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-                                                                True, task=task,
+                                                                self.model.model.is_multilingual, task=task,
                                                                 language=language)
             #language = None
         else:
@@ -203,7 +203,7 @@ class FasterWhisperPipeline(Pipeline):
             task = task or self.tokenizer.task
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-                                                                    True, task=task,
+                                                                    self.model.model.is_multilingual, task=task,
                                                                     language=language)
             #language = None
                 
@@ -318,9 +318,13 @@ class FasterWhisperPipeline(Pipeline):
                                       padding=0 if audio.shape[0] >= N_SAMPLES else N_SAMPLES - audio.shape[0])
         encoder_output = self.model.encode(segment)
         results = self.model.model.detect_language(encoder_output)
-        print("for the lang: ",results)
-        language_token, language_probability = results[0][0]
-        language = language_token[2:-2]
+        print("lang_prob: ",results[0])
+        for language_token,language_probability in results[0]:
+            if language_token[2:-2]=='hi' or language_token[2:-2]=='en':
+                language = language_token[2:-2]
+                break
+        # language_token, language_probability = results[0][0]
+        # language = language_token[2:-2]
         # language = self.set_default_language(language)
         print(f"Detected language: {language} ({language_probability:.2f}) in first 10s of audio...")
         return language
