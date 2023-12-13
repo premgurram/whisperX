@@ -192,6 +192,7 @@ class FasterWhisperPipeline(Pipeline):
             offset=self._vad_params["vad_offset"],
         )
         print("vad_segments:", vad_segments)
+        print("self.tokenizer:",self.tokenizer)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
             task = task or "transcribe"
