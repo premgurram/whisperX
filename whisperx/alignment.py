@@ -56,10 +56,10 @@ DEFAULT_ALIGN_MODELS_HF = {
     "bn": "tanmoyio/wav2vec2-large-xlsr-bengali",
     "mr": "infinitejoy/wav2vec2-large-xls-r-300m-marathi-cv8",
     "ta": "Amrrs/wav2vec2-large-xlsr-53-tamil",
-    "gj": "jaimin/wav2vec2-base-gujarati-demo",     # should work on this
-    "ka": "TheAIchemist13/kannada_beekeeping_wav2vec2",
-    "od": "theainerd/wav2vec2-large-xlsr-53-odia",
-    "pj": "gagan3012/wav2vec2-xlsr-punjabi"
+    "gu": "jaimin/wav2vec2-base-gujarati-demo",     # should work on this
+    "kn": "TheAIchemist13/kannada_beekeeping_wav2vec2",
+    "or": "theainerd/wav2vec2-large-xlsr-53-odia",
+    "pa": "gagan3012/wav2vec2-xlsr-punjabi"
 
 }
 
