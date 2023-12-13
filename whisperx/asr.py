@@ -200,6 +200,7 @@ class FasterWhisperPipeline(Pipeline):
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 True, task=task,
                                                                 language=language)
+            print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
             task = task or self.tokenizer.task
