@@ -194,18 +194,18 @@ class FasterWhisperPipeline(Pipeline):
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
             task = task or "transcribe"
+            print("for if part, the lang is :",language)
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 self.model.model.is_multilingual, task=task,
                                                                 language=language)
-            #language = None
         else:
             language = language or self.tokenizer.language_code
             task = task or self.tokenizer.task
+            print("for else part, the lang is :",language)
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     self.model.model.is_multilingual, task=task,
                                                                     language=language)
-            #language = None
                 
         if self.suppress_numerals:
             previous_suppress_tokens = self.options.suppress_tokens
@@ -304,10 +304,10 @@ class FasterWhisperPipeline(Pipeline):
     #     return {"segments": segments}
 
 
-    def set_default_language(self,language):
-        if language=='hi' or language=='en':
-            return language
-        return 'en'
+    # def set_default_language(self,language):
+    #     if language=='hi' or language=='en':
+    #         return language
+    #     return 'en'
 
     def detect_language(self, audio: np.ndarray):
         if audio.shape[0] < N_SAMPLES:
