@@ -196,7 +196,7 @@ class FasterWhisperPipeline(Pipeline):
             task = task or "transcribe"
             print("lang in if part",language)
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-                                                                self.model.model.is_multilingual, task=task,
+                                                                True, task=task,
                                                                 language=language)
         else:
             language = language or self.tokenizer.language_code
@@ -204,7 +204,7 @@ class FasterWhisperPipeline(Pipeline):
             print("lang in else part",language)
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-                                                                    self.model.model.is_multilingual, task=task,
+                                                                    True, task=task,
                                                                     language=language)
                 
         if self.suppress_numerals:
