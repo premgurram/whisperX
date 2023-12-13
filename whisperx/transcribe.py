@@ -176,7 +176,7 @@ def cli():
         audio = load_audio(audio_path)
         # >> VAD & ASR
         print(">>Performing transcription...")
-        result = model.transcribe(audio, batch_size=batch_size, chunk_size=chunk_size, print_progress=print_progress)
+        result = model.transcribe(audio, batch_size=batch_size, chunk_size=chunk_size, print_progress=print_progress,language=args["language"])
         results.append((result, audio_path))
 
     # Unload Whisper and VAD
