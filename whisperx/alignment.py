@@ -19,7 +19,7 @@ from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters
 
 PUNKT_ABBREVIATIONS = ['dr', 'vs', 'mr', 'mrs', 'prof']
 
-# LANGUAGES_WITHOUT_SPACES = ["ja", "zh"]
+LANGUAGES_WITHOUT_SPACES = ["ja", "zh"]
 
 DEFAULT_ALIGN_MODELS_TORCH = {
     "en": "WAV2VEC2_ASR_BASE_960H",
