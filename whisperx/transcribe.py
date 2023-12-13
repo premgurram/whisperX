@@ -7,7 +7,7 @@ import numpy as np
 import torch
 
 from .alignment import align, load_align_model
-from .asr import load_model
+from .asr import load_model,FasterWhisperPipeline
 from .audio import load_audio
 from .diarize import DiarizationPipeline, assign_word_speakers
 from .utils import (LANGUAGES, TO_LANGUAGE_CODE, get_writer, optional_float,
@@ -125,7 +125,11 @@ def cli():
                 f"{model_name} is an English-only model but received '{args['language']}'; using English instead."
             )
         args["language"] = "en"
+    
+    args["language"] = FasterWhisperPipeline.detect_language(audio)
     align_language = args["language"] if args["language"] is not None else "en" # default to loading english if not specified
+
+    print("align_lang: ",align_language)
 
     temperature = args.pop("temperature")
     if (increment := args.pop("temperature_increment_on_fallback")) is not None:
