@@ -64,7 +64,7 @@ def assign_word_speakers(diarize_df, transcript_result, fill_nearest=False):
                         # sum over speakers
                         speaker = dia_tmp.groupby("speaker")["intersection"].sum().sort_values(ascending=False).index[0]
                         word["speaker"] = speaker
-        seg['unique_speakers'].add(speaker)
+        transcript_result['unique_speakers'].add(speaker)
         
     return transcript_result            
 
