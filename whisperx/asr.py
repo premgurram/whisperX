@@ -177,7 +177,7 @@ class FasterWhisperPipeline(Pipeline):
             audio = load_audio(audio)
 
         def data(audio, segments):
-            print(segments)
+            # print(segments)
             for seg in segments:
                 f1 = int(seg['start'] * SAMPLE_RATE)
                 f2 = int(seg['end'] * SAMPLE_RATE)
@@ -191,20 +191,20 @@ class FasterWhisperPipeline(Pipeline):
             onset=self._vad_params["vad_onset"],
             offset=self._vad_params["vad_offset"],
         )
-        print("vad_segments:", vad_segments)
-        print("self.tokenizer:",self.tokenizer)
+        # print("vad_segments:", vad_segments)
+        # print("self.tokenizer:",self.tokenizer)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
             task = task or "transcribe"
-            print("lang in if part",language)
+            # print("lang in if part",language)
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 True, task=task,
                                                                 language=language)
-            print("updated_sef.tokenizer",self.tokenizer)
+            # print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
             task = task or self.tokenizer.task
-            print("lang in else part",language)
+            # print("lang in else part",language)
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     True, task=task,
@@ -227,7 +227,7 @@ class FasterWhisperPipeline(Pipeline):
                 base_progress = ((idx + 1) / total_segments) * 100
                 percent_complete = base_progress / 2 if combined_progress else base_progress
                 print(f"Progress: {percent_complete:.2f}%...")
-            print("out",out)
+            # print("out",out)
             text = out['text']
             if batch_size in [0, 1, None]:
                 text = text[0]
