@@ -33,7 +33,7 @@ class DiarizationPipeline:
 
 
 def assign_word_speakers(diarize_df, transcript_result, fill_nearest=False):
-    transcript_result['unique_speakers'] = {}
+    transcript_result['unique_speakers'] = set()
     transcript_segments = transcript_result["segments"]
     for seg in transcript_segments:
         # assign speaker to segment (if any)
