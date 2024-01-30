@@ -328,7 +328,7 @@ class FasterWhisperPipeline(Pipeline):
         encoder_output = self.model.encode(segment)
         results = self.model.model.detect_language(encoder_output)
         print("lang_prob: ",results[0])
-        language, language_probability = self.set_default_language(results)
+        language, language_probability = self.set_default_language(results[0])
         print(f"Detected language: {language} ({language_probability:.2f}) in first 30s of audio...")
         return language
 
