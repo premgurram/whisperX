@@ -310,6 +310,9 @@ class FasterWhisperPipeline(Pipeline):
 
 
     def set_default_language(self, language_probabilities):
+        print("lang_prob: ",language_probabilities)
+        print("lang_prob: ",language_probabilities[0])
+        print("type: ",type(language_probabilities))
         for language_token, language_probability in language_probabilities:
             language = language_token[2:-2]
             if language == 'hi' or language =='en':
