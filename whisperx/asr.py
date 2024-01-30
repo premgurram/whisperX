@@ -310,6 +310,12 @@ class FasterWhisperPipeline(Pipeline):
 
 
     def set_default_language(self, language_probabilities):
+        # getting too many values to unpack (expected 2) value error
+        print("type: ",type(language_probabilities))
+        language, language_probability = language_probabilities[0]
+        print("language: ",language)
+        print("language_probability: ",language_probability)
+
         print("lang_prob: ",language_probabilities[0])
         print("type: ",type(language_probabilities))
         for language_token, language_probability in language_probabilities:
