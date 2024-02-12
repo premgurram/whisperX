@@ -309,10 +309,22 @@ class FasterWhisperPipeline(Pipeline):
     #     return {"segments": segments}
 
 
-    # def set_default_language(self,language):
-    #     if language=='hi' or language=='en':
-    #         return language
-    #     return 'en'
+    # def set_default_language(self, language_probabilities):
+    #     # getting too many values to unpack (expected 2) value error
+    #     print("type: ",type(language_probabilities))
+    #     language, language_probability = language_probabilities[0]
+    #     print("language: ",language)
+    #     print("language_probability: ",language_probability)
+
+    #     print("lang_prob: ",language_probabilities[0])
+    #     print("type: ",type(language_probabilities))
+    #     for language_token, language_probability in language_probabilities:
+    #         language = language_token[2:-2]
+    #         if language == 'hi' or language =='en':
+    #             return language, language_probability
+
+    #     #default to hindi if its not there in the list
+    #     return 'hi', 0.0
 
     def detect_language(self, audio: np.ndarray):
         if audio.shape[0] < N_SAMPLES:
@@ -341,7 +353,7 @@ class FasterWhisperPipeline(Pipeline):
             selected_language = 'hi'
 
         print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in first 30s of audio...")
-        return language
+        return selected_language
 
 def load_model(whisper_arch,
                device,
