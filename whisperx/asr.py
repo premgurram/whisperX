@@ -330,16 +330,14 @@ class FasterWhisperPipeline(Pipeline):
 
         selected_language = 'hi'
         selected_language_probability = 0.0
+        allowed_languages = ['en', 'hi', 'bn', 'te', 'mr', 'ta', 'gu', 'kn', 'or', 'pa', 'ml']
+
         for language_token, language_probability in results[0]:
             language = language_token[2:-2]
-            if language == 'hi' or language =='en':
+            if language in allowed_languages:
                 selected_language = language
                 selected_language_probability = language_probability
                 break
-
-        #default to hindi if its not there in the list
-        if selected_language_probability == 0.0:
-            selected_language = 'hi'
 
         print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in first 30s of audio...")
         return selected_language
