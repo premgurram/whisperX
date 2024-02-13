@@ -173,6 +173,8 @@ class FasterWhisperPipeline(Pipeline):
     def transcribe(
         self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, chunk_size=30, print_progress = False, combined_progress=False
     ) -> TranscriptionResult:
+        
+        languages_identified = []
         if isinstance(audio, str):
             audio = load_audio(audio)
 
@@ -195,6 +197,7 @@ class FasterWhisperPipeline(Pipeline):
         # print("self.tokenizer:",self.tokenizer)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
+            languages_identified.append = language
             task = task or "transcribe"
             # print("lang in if part",language)
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
@@ -203,6 +206,7 @@ class FasterWhisperPipeline(Pipeline):
             # print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
+            languages_identified.append = language
             task = task or self.tokenizer.task
             # print("lang in else part",language)
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
@@ -231,12 +235,13 @@ class FasterWhisperPipeline(Pipeline):
             text = out['text']
             if batch_size in [0, 1, None]:
                 text = text[0]
+
+            languages_identified.append = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
             segments.append(
                 {
                     "text": text,
                     "start": round(vad_segments[idx]['start'], 3),
-                    "end": round(vad_segments[idx]['end'], 3),
-                    # "language":self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
+                    "end": round(vad_segments[idx]['end'], 3)
                 }
             )
 
@@ -248,7 +253,8 @@ class FasterWhisperPipeline(Pipeline):
         if self.suppress_numerals:
             self.options = self.options._replace(suppress_tokens=previous_suppress_tokens)
 
-        return {"segments": segments, "language": language}
+        return {"segments": segments, "language": set(languages_identified)}
+
 
     '''
     solution for language detection for every chunk - not effective in transcription
@@ -308,23 +314,6 @@ class FasterWhisperPipeline(Pipeline):
 
     #     return {"segments": segments}
 
-
-    # def set_default_language(self, language_probabilities):
-    #     # getting too many values to unpack (expected 2) value error
-    #     print("type: ",type(language_probabilities))
-    #     language, language_probability = language_probabilities[0]
-    #     print("language: ",language)
-    #     print("language_probability: ",language_probability)
-
-    #     print("lang_prob: ",language_probabilities[0])
-    #     print("type: ",type(language_probabilities))
-    #     for language_token, language_probability in language_probabilities:
-    #         language = language_token[2:-2]
-    #         if language == 'hi' or language =='en':
-    #             return language, language_probability
-
-    #     #default to hindi if its not there in the list
-    #     return 'hi', 0.0
 
     def detect_language(self, audio: np.ndarray):
         if audio.shape[0] < N_SAMPLES:
