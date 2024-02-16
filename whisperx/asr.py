@@ -197,7 +197,7 @@ class FasterWhisperPipeline(Pipeline):
         # print("self.tokenizer:",self.tokenizer)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
-            languages_identified.append = language
+            languages_identified.append(language)
             task = task or "transcribe"
             # print("lang in if part",language)
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
@@ -206,7 +206,7 @@ class FasterWhisperPipeline(Pipeline):
             # print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
-            languages_identified.append = language
+            languages_identified.append(language)
             task = task or self.tokenizer.task
             # print("lang in else part",language)
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
@@ -236,7 +236,7 @@ class FasterWhisperPipeline(Pipeline):
             if batch_size in [0, 1, None]:
                 text = text[0]
 
-            languages_identified.append = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
+            languages_identified.append(self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES]))
             segments.append(
                 {
                     "text": text,
