@@ -13,7 +13,7 @@ from .utils import exact_div
 SAMPLE_RATE = 16000
 N_FFT = 400
 HOP_LENGTH = 200
-CHUNK_LENGTH = 2
+CHUNK_LENGTH = 10
 N_SAMPLES = CHUNK_LENGTH * SAMPLE_RATE  # 480000 samples in a 30-second chunk
 N_FRAMES = exact_div(N_SAMPLES, HOP_LENGTH)  # 3000 frames in a mel spectrogram input
 
