@@ -10,7 +10,7 @@ import torch.nn.functional as F
 from .utils import exact_div
 
 # hard-coded audio hyperparameters
-SAMPLE_RATE = 16000
+SAMPLE_RATE = 32000
 N_FFT = 400
 HOP_LENGTH = 200
 CHUNK_LENGTH = 30
