@@ -253,7 +253,7 @@ class FasterWhisperPipeline(Pipeline):
         if self.suppress_numerals:
             self.options = self.options._replace(suppress_tokens=previous_suppress_tokens)
 
-        return {"segments": segments, "language": set(languages_identified)}
+        return {"segments": segments, "language": languages_identified}
 
 
     '''
