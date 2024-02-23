@@ -193,22 +193,22 @@ class FasterWhisperPipeline(Pipeline):
             onset=self._vad_params["vad_onset"],
             offset=self._vad_params["vad_offset"],
         )
-        # print("vad_segments:", vad_segments)
-        # print("self.tokenizer:",self.tokenizer)
+        print("vad_segments:", vad_segments)
+        print("self.tokenizer:",self.tokenizer)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
-            languages_identified.append(language)
+            languages_identified.append = language
             task = task or "transcribe"
-            # print("lang in if part",language)
+            print("lang in if part",language)
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 True, task=task,
                                                                 language=language)
-            # print("updated_sef.tokenizer",self.tokenizer)
+            print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
-            languages_identified.append(language)
+            languages_identified.append = language
             task = task or self.tokenizer.task
-            # print("lang in else part",language)
+            print("lang in else part",language)
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     True, task=task,
@@ -236,7 +236,9 @@ class FasterWhisperPipeline(Pipeline):
             if batch_size in [0, 1, None]:
                 text = text[0]
 
-            languages_identified.append(self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES]))
+            language = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
+            print(f"language: {language}")
+            languages_identified.append = language
             segments.append(
                 {
                     "text": text,
@@ -252,6 +254,9 @@ class FasterWhisperPipeline(Pipeline):
         # revert suppressed tokens if suppress_numerals is enabled
         if self.suppress_numerals:
             self.options = self.options._replace(suppress_tokens=previous_suppress_tokens)
+
+
+        print(f"languages_identified: {languages_identified} and count is: {len(languages_identified)}")            
 
         return {"segments": segments, "language": languages_identified}
 
