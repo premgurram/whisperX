@@ -174,7 +174,7 @@ class FasterWhisperPipeline(Pipeline):
         self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, chunk_size=30, print_progress = False, combined_progress=False
     ) -> TranscriptionResult:
         
-        languages_identified = []
+        languages_identified = set()
         if isinstance(audio, str):
             audio = load_audio(audio)
 
@@ -193,22 +193,22 @@ class FasterWhisperPipeline(Pipeline):
             onset=self._vad_params["vad_onset"],
             offset=self._vad_params["vad_offset"],
         )
-        # print("vad_segments:", vad_segments)
-        # print("self.tokenizer:",self.tokenizer)
+        print("vad_segments:", vad_segments)
+        print("self.tokenizer:",self.tokenizer)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
-            languages_identified.append(language)
+            languages_identified.add(language)
             task = task or "transcribe"
-            # print("lang in if part",language)
+            print("lang in if part",language)
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 True, task=task,
                                                                 language=language)
-            # print("updated_sef.tokenizer",self.tokenizer)
+            print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
-            languages_identified.append(language)
+            languages_identified.add(language)
             task = task or self.tokenizer.task
-            # print("lang in else part",language)
+            print("lang in else part",language)
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     True, task=task,
@@ -217,7 +217,7 @@ class FasterWhisperPipeline(Pipeline):
         if self.suppress_numerals:
             previous_suppress_tokens = self.options.suppress_tokens
             numeral_symbol_tokens = find_numeral_symbol_tokens(self.tokenizer)
-            print(f"Suppressing numeral and symbol tokens")
+            print(f"Suppressing numeral and symbol tokens: {numeral_symbol_tokens}")
             new_suppressed_tokens = numeral_symbol_tokens + self.options.suppress_tokens
             new_suppressed_tokens = list(set(new_suppressed_tokens))
             self.options = self.options._replace(suppress_tokens=new_suppressed_tokens)
@@ -236,7 +236,10 @@ class FasterWhisperPipeline(Pipeline):
             if batch_size in [0, 1, None]:
                 text = text[0]
 
-            languages_identified.append(self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES]))
+            language = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
+            print(f"language: {language}")
+            print(f"adding language:{language} in segments traverse")
+            languages_identified.add(language)
             segments.append(
                 {
                     "text": text,
@@ -252,6 +255,9 @@ class FasterWhisperPipeline(Pipeline):
         # revert suppressed tokens if suppress_numerals is enabled
         if self.suppress_numerals:
             self.options = self.options._replace(suppress_tokens=previous_suppress_tokens)
+
+
+        print(f"languages_identified: {languages_identified} and count is: {len(languages_identified)}")            
 
         return {"segments": segments, "language": languages_identified}
 
@@ -339,7 +345,7 @@ class FasterWhisperPipeline(Pipeline):
                 selected_language_probability = language_probability
                 break
 
-        print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in first 30s of audio...")
+        print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
         return selected_language
 
 def load_model(whisper_arch,
