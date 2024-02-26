@@ -174,7 +174,7 @@ class FasterWhisperPipeline(Pipeline):
         self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, chunk_size=30, print_progress = False, combined_progress=False
     ) -> TranscriptionResult:
         
-        languages_identified = []
+        languages_identified = set()
         if isinstance(audio, str):
             audio = load_audio(audio)
 
@@ -197,7 +197,7 @@ class FasterWhisperPipeline(Pipeline):
         print("self.tokenizer:",self.tokenizer)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
-            languages_identified.append(language)
+            languages_identified.add(language)
             task = task or "transcribe"
             print("lang in if part",language)
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
@@ -206,7 +206,7 @@ class FasterWhisperPipeline(Pipeline):
             print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
-            languages_identified.append(language)
+            languages_identified.add(language)
             task = task or self.tokenizer.task
             print("lang in else part",language)
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
@@ -239,7 +239,7 @@ class FasterWhisperPipeline(Pipeline):
             language = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
             print(f"language: {language}")
             print(f"adding language:{language} in segments traverse")
-            languages_identified.append(language)
+            languages_identified.add(language)
             segments.append(
                 {
                     "text": text,
