@@ -202,7 +202,7 @@ class FasterWhisperPipeline(Pipeline):
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 True, task=task,
                                                                 language=language)
-            print("updated_sef.tokenizer",self.tokenizer)
+            # print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
             languages_identified.add(language)
@@ -343,7 +343,7 @@ class FasterWhisperPipeline(Pipeline):
                 selected_language_probability = language_probability
                 break
 
-        print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
+        # print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
         return selected_language
 
 def load_model(whisper_arch,
