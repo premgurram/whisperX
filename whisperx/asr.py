@@ -179,7 +179,7 @@ class FasterWhisperPipeline(Pipeline):
             audio = load_audio(audio)
 
         def data(audio, segments):
-            # print(segments)
+            print("segments:",segments)
             for seg in segments:
                 f1 = int(seg['start'] * SAMPLE_RATE)
                 f2 = int(seg['end'] * SAMPLE_RATE)
