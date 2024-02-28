@@ -179,7 +179,7 @@ class FasterWhisperPipeline(Pipeline):
             audio = load_audio(audio)
 
         def data(audio, segments):
-            print("segments:",segments)
+            # print("segments:",segments)
             for seg in segments:
                 f1 = int(seg['start'] * SAMPLE_RATE)
                 f2 = int(seg['end'] * SAMPLE_RATE)
@@ -200,7 +200,7 @@ class FasterWhisperPipeline(Pipeline):
             languages_identified.add(language)
             task = task or "transcribe"
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-                                                                True, task=task,
+                                                                self.model.model.is_multilingual, task=task,
                                                                 language=language)
             # print("updated_sef.tokenizer",self.tokenizer)
         else:
@@ -209,7 +209,7 @@ class FasterWhisperPipeline(Pipeline):
             task = task or self.tokenizer.task
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-                                                                    True, task=task,
+                                                                    self.model.model.is_multilingual, task=task,
                                                                     language=language)
                 
         if self.suppress_numerals:
