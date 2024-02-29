@@ -179,7 +179,6 @@ class FasterWhisperPipeline(Pipeline):
             audio = load_audio(audio)
 
         def data(audio, segments):
-            # print("segments:",segments)
             for seg in segments:
                 f1 = int(seg['start'] * SAMPLE_RATE)
                 f2 = int(seg['end'] * SAMPLE_RATE)
@@ -194,7 +193,6 @@ class FasterWhisperPipeline(Pipeline):
             offset=self._vad_params["vad_offset"],
         )
         print("vad_segments:", vad_segments)
-        # print("self.tokenizer:",self.tokenizer)
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
             languages_identified.add(language)
@@ -202,7 +200,6 @@ class FasterWhisperPipeline(Pipeline):
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 self.model.model.is_multilingual, task=task,
                                                                 language=language)
-            # print("updated_sef.tokenizer",self.tokenizer)
         else:
             language = language or self.tokenizer.language_code
             languages_identified.add(language)
@@ -224,7 +221,6 @@ class FasterWhisperPipeline(Pipeline):
         segments: List[SingleSegment] = []
         batch_size = batch_size or self._batch_size
         total_segments = len(vad_segments)
-        print("language passed: ",language)
         for idx, out in enumerate(self.__call__(data(audio, vad_segments), batch_size=batch_size, num_workers=num_workers,language = language)):
             if print_progress:
                 base_progress = ((idx + 1) / total_segments) * 100
@@ -236,8 +232,6 @@ class FasterWhisperPipeline(Pipeline):
                 text = text[0]
 
             language = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
-            # print(f"language: {language}")
-            # print(f"adding language:{language} in segments traverse")
             languages_identified.add(language)
             segments.append(
                 {

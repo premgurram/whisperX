@@ -96,6 +96,7 @@ def load_align_model(language_code, device, model_name=None, model_dir=None):
         align_dictionary = {char.lower(): code for char,code in processor.tokenizer.get_vocab().items()}
 
     align_metadata = {"language": language_code, "dictionary": align_dictionary, "type": pipeline_type}
+    print(f"align_language : {align_metadata['language']}")
 
     return align_model, align_metadata
 

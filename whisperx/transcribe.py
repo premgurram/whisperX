@@ -129,8 +129,6 @@ def cli():
     args["language"] = FasterWhisperPipeline.detect_language(audio)
     align_language = args["language"] if args["language"] is not None else "en" # default to loading english if not specified
 
-    # print("align_lang: ",align_language)
-
     temperature = args.pop("temperature")
     if (increment := args.pop("temperature_increment_on_fallback")) is not None:
         temperature = tuple(np.arange(temperature, 1.0 + 1e-6, increment))
