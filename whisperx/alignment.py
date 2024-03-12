@@ -65,12 +65,15 @@ DEFAULT_ALIGN_MODELS_HF = {
 
 
 def load_align_model(language_code, device, model_name=None, model_dir=None):
+    print(f"Loading alignment model for language: {language_code}")
     if model_name is None:
         # use default model
         if language_code in DEFAULT_ALIGN_MODELS_TORCH:
             model_name = DEFAULT_ALIGN_MODELS_TORCH[language_code]
+            print(f"Using default Torch alignment model for language: {language_code}")
         elif language_code in DEFAULT_ALIGN_MODELS_HF:
             model_name = DEFAULT_ALIGN_MODELS_HF[language_code]
+            print(f"Using default HF alignment model for language: {language_code} model_name: {model_name}")
         else:
             print(f"There is no default alignment model set for this language ({language_code}).\
                 Please find a wav2vec2.0 model finetuned on this language in https://huggingface.co/models, then pass the model name in --align_model [MODEL_NAME]")

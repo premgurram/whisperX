@@ -174,10 +174,12 @@ class FasterWhisperPipeline(Pipeline):
         self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, chunk_size=30, print_progress = False, combined_progress=False
     ) -> TranscriptionResult:
         
+        print("transcribe")
         languages_identified = set()
         if isinstance(audio, str):
             audio = load_audio(audio)
 
+        print("audio.shape",audio.shape)
         def data(audio, segments):
             for seg in segments:
                 f1 = int(seg['start'] * SAMPLE_RATE)
@@ -194,6 +196,7 @@ class FasterWhisperPipeline(Pipeline):
         )
         print("vad_segments:", vad_segments)
         if self.tokenizer is None:
+            print("No tokenizer found, language will be first be detected for each audio file (increases inference time).")
             language = language or self.detect_language(audio)
             languages_identified.add(language)
             task = task or "transcribe"
@@ -201,14 +204,19 @@ class FasterWhisperPipeline(Pipeline):
                                                                 self.model.model.is_multilingual, task=task,
                                                                 language=language)
         else:
+            print("Using preset tokenizer.")
             language = language or self.tokenizer.language_code
+            print(f"Using preset language: {language}")
             languages_identified.add(language)
+            print(f"languages_identified: {languages_identified} and count is: {len(list(languages_identified))}")
             task = task or self.tokenizer.task
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
+                print("Tokenizer task or language does not match, reverting to preset tokenizer.")
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     self.model.model.is_multilingual, task=task,
                                                                     language=language)
                 
+        print(f"Using tokenizer with task: {task} and language: {language}")
         if self.suppress_numerals:
             previous_suppress_tokens = self.options.suppress_tokens
             numeral_symbol_tokens = find_numeral_symbol_tokens(self.tokenizer)
@@ -228,10 +236,12 @@ class FasterWhisperPipeline(Pipeline):
                 print(f"Progress: {percent_complete:.2f}%...")
             # print("out",out)
             text = out['text']
+            print(f"idx: {idx}, text: {text}")
             if batch_size in [0, 1, None]:
                 text = text[0]
 
             language = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
+            print(f"Detected language: {language} in the 8s chunk of audio...")
             languages_identified.add(language)
             segments.append(
                 {
@@ -240,6 +250,8 @@ class FasterWhisperPipeline(Pipeline):
                     "end": round(vad_segments[idx]['end'], 3)
                 }
             )
+
+            print(f"languages_identified: {languages_identified} and count is: {len(list(languages_identified))}")
 
         # revert the tokenizer if multilingual inference is enabled
         if self.preset_language is None:
