@@ -212,6 +212,7 @@ class FasterWhisperPipeline(Pipeline):
             task = task or self.tokenizer.task
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
                 print("Tokenizer task or language does not match, reverting to preset tokenizer.")
+                print(f"Tokenizer task: {task}, language: {language}")
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     self.model.model.is_multilingual, task=task,
                                                                     language=language)
