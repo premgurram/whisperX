@@ -336,6 +336,8 @@ class FasterWhisperPipeline(Pipeline):
                                       n_mels=model_n_mels if model_n_mels is not None else 80,
                                       padding=0 if audio.shape[0] >= N_SAMPLES else N_SAMPLES - audio.shape[0])
         print("segment: ",segment)
+
+        print("start encoder_output")
         encoder_output = self.model.encode(segment)
         print("encoder_output: ",encoder_output)
         results = self.model.model.detect_language(encoder_output)
