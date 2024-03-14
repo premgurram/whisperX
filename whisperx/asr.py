@@ -422,7 +422,6 @@ def load_model(whisper_arch,
         "prepend_punctuations": "\"'“¿([{-",
         "append_punctuations": "\"'.。,，!！?？:：”)]}、",
         "suppress_numerals": False,
-        "max_new_tokens": None,
         "clip_timestamps": None,
         "hallucination_silence_threshold": None,
     }
