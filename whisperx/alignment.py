@@ -23,57 +23,48 @@ LANGUAGES_WITHOUT_SPACES = ["ja", "zh"]
 
 DEFAULT_ALIGN_MODELS_TORCH = {
     "en": "WAV2VEC2_ASR_BASE_960H",
-    # "fr": "VOXPOPULI_ASR_BASE_10K_FR",
-    # "de": "VOXPOPULI_ASR_BASE_10K_DE",
-    # "es": "VOXPOPULI_ASR_BASE_10K_ES",
-    # "it": "VOXPOPULI_ASR_BASE_10K_IT",
+    "fr": "VOXPOPULI_ASR_BASE_10K_FR",
+    "de": "VOXPOPULI_ASR_BASE_10K_DE",
+    "es": "VOXPOPULI_ASR_BASE_10K_ES",
+    "it": "VOXPOPULI_ASR_BASE_10K_IT",
 }
 
 DEFAULT_ALIGN_MODELS_HF = {
-    # "ja": "jonatasgrosman/wav2vec2-large-xlsr-53-japanese",
-    # "zh": "jonatasgrosman/wav2vec2-large-xlsr-53-chinese-zh-cn",
-    # "nl": "jonatasgrosman/wav2vec2-large-xlsr-53-dutch",
-    # "uk": "Yehor/wav2vec2-xls-r-300m-uk-with-small-lm",
-    # "pt": "jonatasgrosman/wav2vec2-large-xlsr-53-portuguese",
-    # "ar": "jonatasgrosman/wav2vec2-large-xlsr-53-arabic",
-    # "cs": "comodoro/wav2vec2-xls-r-300m-cs-250",
-    # "ru": "jonatasgrosman/wav2vec2-large-xlsr-53-russian",
-    # "pl": "jonatasgrosman/wav2vec2-large-xlsr-53-polish",
-    # "hu": "jonatasgrosman/wav2vec2-large-xlsr-53-hungarian",
-    # "fi": "jonatasgrosman/wav2vec2-large-xlsr-53-finnish",
-    # "fa": "jonatasgrosman/wav2vec2-large-xlsr-53-persian",
-    # "el": "jonatasgrosman/wav2vec2-large-xlsr-53-greek",
-    # "tr": "mpoyraz/wav2vec2-xls-r-300m-cv7-turkish",
-    # "da": "saattrupdan/wav2vec2-xls-r-300m-ftspeech",
-    # "he": "imvladikon/wav2vec2-xls-r-300m-hebrew",
-    # "vi": 'nguyenvulebinh/wav2vec2-base-vi',
-    # "ko": "kresnik/wav2vec2-large-xlsr-korean",
-    # "ur": "kingabzpro/wav2vec2-large-xls-r-300m-Urdu",
-    # "ca": "softcatala/wav2vec2-large-xlsr-catala",
+    "ja": "jonatasgrosman/wav2vec2-large-xlsr-53-japanese",
+    "zh": "jonatasgrosman/wav2vec2-large-xlsr-53-chinese-zh-cn",
+    "nl": "jonatasgrosman/wav2vec2-large-xlsr-53-dutch",
+    "uk": "Yehor/wav2vec2-xls-r-300m-uk-with-small-lm",
+    "pt": "jonatasgrosman/wav2vec2-large-xlsr-53-portuguese",
+    "ar": "jonatasgrosman/wav2vec2-large-xlsr-53-arabic",
+    "cs": "comodoro/wav2vec2-xls-r-300m-cs-250",
+    "ru": "jonatasgrosman/wav2vec2-large-xlsr-53-russian",
+    "pl": "jonatasgrosman/wav2vec2-large-xlsr-53-polish",
+    "hu": "jonatasgrosman/wav2vec2-large-xlsr-53-hungarian",
+    "fi": "jonatasgrosman/wav2vec2-large-xlsr-53-finnish",
+    "fa": "jonatasgrosman/wav2vec2-large-xlsr-53-persian",
+    "el": "jonatasgrosman/wav2vec2-large-xlsr-53-greek",
+    "tr": "mpoyraz/wav2vec2-xls-r-300m-cv7-turkish",
+    "da": "saattrupdan/wav2vec2-xls-r-300m-ftspeech",
+    "he": "imvladikon/wav2vec2-xls-r-300m-hebrew",
+    "vi": 'nguyenvulebinh/wav2vec2-base-vi',
+    "ko": "kresnik/wav2vec2-large-xlsr-korean",
+    "ur": "kingabzpro/wav2vec2-large-xls-r-300m-Urdu",
     "te": "anuragshas/wav2vec2-large-xlsr-53-telugu",
     "hi": "theainerd/Wav2Vec2-large-xlsr-hindi",
+    "ca": "softcatala/wav2vec2-large-xlsr-catala",
     "ml": "gvs/wav2vec2-large-xlsr-malayalam",
-    "bn": "tanmoyio/wav2vec2-large-xlsr-bengali",
-    "mr": "infinitejoy/wav2vec2-large-xls-r-300m-marathi-cv8",
-    "ta": "Amrrs/wav2vec2-large-xlsr-53-tamil",
-    "gu": "jaimin/wav2vec2-base-gujarati-demo",     # should work on this
-    "kn": "TheAIchemist13/kannada_beekeeping_wav2vec2",
-    "or": "theainerd/wav2vec2-large-xlsr-53-odia",
-    "pa": "gagan3012/wav2vec2-xlsr-punjabi"
-
+    "no": "NbAiLab/nb-wav2vec2-1b-bokmaal",
+    "nn": "NbAiLab/nb-wav2vec2-300m-nynorsk",
 }
 
 
 def load_align_model(language_code, device, model_name=None, model_dir=None):
-    print(f"Loading alignment model for language: {language_code}")
     if model_name is None:
         # use default model
         if language_code in DEFAULT_ALIGN_MODELS_TORCH:
             model_name = DEFAULT_ALIGN_MODELS_TORCH[language_code]
-            print(f"Using default Torch alignment model for language: {language_code}")
         elif language_code in DEFAULT_ALIGN_MODELS_HF:
             model_name = DEFAULT_ALIGN_MODELS_HF[language_code]
-            print(f"Using default HF alignment model for language: {language_code} model_name: {model_name}")
         else:
             print(f"There is no default alignment model set for this language ({language_code}).\
                 Please find a wav2vec2.0 model finetuned on this language in https://huggingface.co/models, then pass the model name in --align_model [MODEL_NAME]")
@@ -99,7 +90,6 @@ def load_align_model(language_code, device, model_name=None, model_dir=None):
         align_dictionary = {char.lower(): code for char,code in processor.tokenizer.get_vocab().items()}
 
     align_metadata = {"language": language_code, "dictionary": align_dictionary, "type": pipeline_type}
-    print(f"align_language : {align_metadata['language']}")
 
     return align_model, align_metadata
 
