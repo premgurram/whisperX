@@ -219,7 +219,7 @@ class FasterWhisperPipeline(Pipeline):
                                                                     self.model.model.is_multilingual, task=task,
                                                                     language=language)
                 
-        print(f"Using tokenizer with task: {task} and language: {language}")
+        print(f"Using tokenizer with task: {task} and language: {actual_language}")
         if self.suppress_numerals:
             previous_suppress_tokens = self.options.suppress_tokens
             numeral_symbol_tokens = find_numeral_symbol_tokens(self.tokenizer)
@@ -253,8 +253,8 @@ class FasterWhisperPipeline(Pipeline):
                 text = text[0]
 
             language = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
-            print(f"Detected language: {language} in the 8s chunk of audio...")
-            languages_identified.add(language)
+            print(f"Detected language: {actual_language} in the 8s chunk of audio...")
+            languages_identified.add(actual_language)
             segments.append(
                 {
                     "text": text,
@@ -369,7 +369,7 @@ class FasterWhisperPipeline(Pipeline):
         global actual_language
         if(actual_language==""):
             if audio.shape[0] > N_SAMPLES:
-                audio=audio[0,480000]
+                audio=audio[0:480000]
             API_URL = "https://api-inference.huggingface.co/models/varunril/lan_det"
             headers = {"Authorization": "Bearer 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"}
             save_audio("/content/output.wav", audio, sr=16000)
