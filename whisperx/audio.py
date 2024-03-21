@@ -6,7 +6,7 @@ from typing import Optional, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-
+from scipy.io.wavfile import write
 from .utils import exact_div
 
 # hard-coded audio hyperparameters
@@ -21,6 +21,13 @@ N_SAMPLES_PER_TOKEN = HOP_LENGTH * 2  # the initial convolutions has stride 2
 FRAMES_PER_SECOND = exact_div(SAMPLE_RATE, HOP_LENGTH)  # 10ms per audio frame
 TOKENS_PER_SECOND = exact_div(SAMPLE_RATE, N_SAMPLES_PER_TOKEN)  # 20ms per audio token
 
+def save_audio(file: str, audio_data: np.ndarray, sr: int = SAMPLE_RATE):
+   
+    # Convert audio data to int16 type (assuming it's in the range [-1, 1])
+    audio_data_int16 = (audio_data * 32767).astype(np.int16)
+   
+    # Write the audio data to a WAV file
+    write(file, sr, audio_data_int16)
 
 def load_audio(file: str, sr: int = SAMPLE_RATE):
     """

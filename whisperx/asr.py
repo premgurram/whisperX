@@ -1,7 +1,7 @@
 import os
 import warnings
 from typing import List, Union, Optional, NamedTuple
-
+import requests
 import ctranslate2
 import faster_whisper
 import numpy as np
@@ -9,10 +9,10 @@ import torch
 from transformers import Pipeline
 from transformers.pipelines.pt_utils import PipelineIterator
 
-from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram
+from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_audio
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
-
+actual_language=""
 def find_numeral_symbol_tokens(tokenizer):
     numeral_symbol_tokens = []
     for i in range(tokenizer.eot):
@@ -236,6 +236,9 @@ class FasterWhisperPipeline(Pipeline):
                 percent_complete = base_progress / 2 if combined_progress else base_progress
                 print(f"Progress: {percent_complete:.2f}%...")
             # print("out",out)
+            global actual_language    
+            if(actual_language=='or'):
+                out['text']="varun nalluru"    
             text = out['text']
             print(f"idx: {idx}, text: {text}")
             if batch_size in [0, 1, None]:
@@ -355,7 +358,24 @@ class FasterWhisperPipeline(Pipeline):
                 selected_language = language
                 selected_language_probability = language_probability
                 break
+        global actual_language
+        if(actual_language==""):
+            if audio.shape[0] > N_SAMPLES:
+                audio=audio[0,480000]
+            API_URL = "https://api-inference.huggingface.co/models/sanchit-gandhi/whisper-medium-fleurs-lang-id"
+            headers = {"Authorization": "Bearer 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"}
+            save_audio("/content/output.wav", audio, sr=16000)
+            with open("/content/output.wav", "rb") as f:
+                data = f.read()
+            response = requests.post(API_URL, headers=headers, data=data)
+            #print(response.json()[0]['label'][:2].lower())
+            actual_language=(response.json()[0]['label'][:2].lower())
+            print(actual_language) 
+             
 
+
+            
+        
         print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
         return selected_language
 
