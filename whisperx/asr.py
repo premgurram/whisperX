@@ -208,8 +208,8 @@ class FasterWhisperPipeline(Pipeline):
         else:
             print("Using preset tokenizer.")
             language = language or self.tokenizer.language_code
-            print(f"Using preset language: {language}")
-            languages_identified.add(language)
+            print(f"Using preset language: {actual_language}")
+            languages_identified.add(actual_language)
             print(f"languages_identified: {languages_identified} and count is: {len(list(languages_identified))}")
             task = task or self.tokenizer.task
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
@@ -371,7 +371,7 @@ class FasterWhisperPipeline(Pipeline):
             if audio.shape[0] > N_SAMPLES:
                 audio=audio[0:480000]
             API_URL = "https://api-inference.huggingface.co/models/varunril/lan_det"
-            headers = {"Authorization": "Bearer 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"}
+            headers = {"Authorization": "Bearer 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"}
             save_audio("/content/output.wav", audio, sr=16000)
             with open("/content/output.wav", "rb") as f:
                 data = f.read()
