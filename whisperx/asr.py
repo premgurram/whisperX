@@ -197,6 +197,8 @@ class FasterWhisperPipeline(Pipeline):
         print("vad_segments:", vad_segments)
         if self.tokenizer is None:
             print("No tokenizer found, language will be first be detected for each audio file (increases inference time).")
+            global actual_language
+            actual_language=""
             language = language or self.detect_language(audio)
             languages_identified.add(language)
             task = task or "transcribe"
@@ -368,7 +370,7 @@ class FasterWhisperPipeline(Pipeline):
         if(actual_language==""):
             if audio.shape[0] > N_SAMPLES:
                 audio=audio[0,480000]
-            API_URL = "https://api-inference.huggingface.co/models/sanchit-gandhi/whisper-medium-fleurs-lang-id"
+            API_URL = "https://api-inference.huggingface.co/models/varunril/lan_det"
             headers = {"Authorization": "Bearer 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"}
             save_audio("/content/output.wav", audio, sr=16000)
             with open("/content/output.wav", "rb") as f:
