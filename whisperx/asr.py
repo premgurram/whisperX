@@ -380,11 +380,12 @@ class FasterWhisperPipeline(Pipeline):
             actual_language=(response.json()[0]['label'][:2].lower())
             print(actual_language) 
              
-
-
-            
+        if(actual_language=='or'):
+            selected_language_probability=1
+        else:
+            actual_language=selected_language    
         
-        print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
+        print(f"Detected language: {actual_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
         return selected_language
 
 def load_model(whisper_arch,
