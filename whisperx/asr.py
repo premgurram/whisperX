@@ -386,7 +386,10 @@ class FasterWhisperPipeline(Pipeline):
             save_audio("/content/output.wav", audio, sr=16000)
             with open("/content/output.wav", "rb") as f:
                 data = f.read()
-            response = requests.post(API_URL, headers=headers, data=data)
+            while True:    
+                response = requests.post(API_URL, headers=headers, data=data)
+                if(response.status_code==200):
+                    break
             #print(response.json()[0]['label'][:2].lower())
             actual_language=(response.json()[0]['label'][:2].lower())
             print(actual_language) 
