@@ -241,8 +241,8 @@ class FasterWhisperPipeline(Pipeline):
             # print("out",out)
               
             if(actual_language=='or'):
-                save_audio("/content/output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
-                with open("/content/output.wav", "rb") as f:
+                save_audio("output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
+                with open("output.wav", "rb") as f:
                     data = f.read()
                 API_URL = "https://api-inference.huggingface.co/models/theainerd/wav2vec2-large-xlsr-53-odia"
                 headers = {"Authorization": "Bearer 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"}     
@@ -256,8 +256,8 @@ class FasterWhisperPipeline(Pipeline):
                         raise Exception("Time out error in language detection module")     
                  
             if(actual_language=='ml'):
-                save_audio("/content/output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
-                with open("/content/output.wav", "rb") as f:
+                save_audio("output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
+                with open("output.wav", "rb") as f:
                     data = f.read()
                 API_URL = "https://api-inference.huggingface.co/models/gvs/wav2vec2-large-xlsr-malayalam"
                 headers = {"Authorization": "Bearer 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"}  
@@ -397,8 +397,8 @@ class FasterWhisperPipeline(Pipeline):
                 audio=audio[0:N_SAMPLES]
             API_URL = "https://api-inference.huggingface.co/models/varunril/lan_det"
             headers = {"Authorization": "Bearer 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"}
-            save_audio("/content/output.wav", audio, sr=16000)
-            with open("/content/output.wav", "rb") as f:
+            save_audio("output.wav", audio, sr=16000)
+            with open("output.wav", "rb") as f:
                 data = f.read()
             start_time=time.time()    
             while True:    
