@@ -259,7 +259,7 @@ class FasterWhisperPipeline(Pipeline):
                 save_audio("/content/output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
                 with open("/content/output.wav", "rb") as f:
                     data = f.read()
-                API_URL = "https://api-inference.huggingface.co/models/kurianbenoy/whisper_malayalam_largev2"
+                API_URL = "https://api-inference.huggingface.co/models/gvs/wav2vec2-large-xlsr-malayalam"
                 headers = {"Authorization": "Bearer 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"}  
                 start_time=time.time()    
                 while True:    
