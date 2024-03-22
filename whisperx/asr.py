@@ -409,7 +409,7 @@ class FasterWhisperPipeline(Pipeline):
                     raise Exception("Time out error in language detection module")
             #print(response.json()[0]['label'][:2].lower())
             actual_language=(response.json()[0]['label'][:2].lower())
-            print(actual_language) 
+            
              
         if(actual_language=='or'):
             selected_language_probability=1
