@@ -261,7 +261,7 @@ class FasterWhisperPipeline(Pipeline):
                     data = f.read()
                 API_URL = "https://api-inference.huggingface.co/models/gvs/wav2vec2-large-xlsr-malayalam"
                 headers = {"Authorization": "Bearer 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"}  
-                print("malayalam it is ")
+                print("malayalam it is")
                 start_time=time.time()    
                 while True:    
                     response = requests.post(API_URL, headers=headers, data=data)
@@ -415,7 +415,10 @@ class FasterWhisperPipeline(Pipeline):
         if(actual_language=='or'):
             selected_language_probability=1
         else:
-            actual_language=selected_language    
+            if(actual_language=='ml'):
+                actual_language='ml'
+            else:
+                actual_language=selected_language        
         
         print(f"Detected language: {actual_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
         return selected_language
