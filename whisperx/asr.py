@@ -246,7 +246,17 @@ class FasterWhisperPipeline(Pipeline):
                 API_URL = "https://api-inference.huggingface.co/models/theainerd/wav2vec2-large-xlsr-53-odia"
                 headers = {"Authorization": "Bearer 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"}    
                 response = requests.post(API_URL, headers=headers, data=data)    
-                out['text']=response.json()['text']    
+                out['text']=response.json()['text']   
+            if(actual_language=='ml'):
+                save_audio("/content/output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
+                with open("/content/output.wav", "rb") as f:
+                    data = f.read()
+                API_URL = "https://api-inference.huggingface.co/models/gvs/wav2vec2-large-xlsr-malayalam"
+                headers = {"Authorization": "Bearer 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"}    
+                response = requests.post(API_URL, headers=headers, data=data)    
+                out['text']=response.json()['text']   
+
+
             text = out['text']
             print(f"idx: {idx}, text: {text}")
             if batch_size in [0, 1, None]:
@@ -369,7 +379,7 @@ class FasterWhisperPipeline(Pipeline):
         global actual_language
         if(actual_language==""):
             if audio.shape[0] > N_SAMPLES:
-                audio=audio[0:480000]
+                audio=audio[0:N_SAMPLES]
             API_URL = "https://api-inference.huggingface.co/models/varunril/lan_det"
             headers = {"Authorization": "Bearer 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"}
             save_audio("/content/output.wav", audio, sr=16000)
