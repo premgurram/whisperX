@@ -1,5 +1,6 @@
 import os
 import warnings
+import time
 from typing import List, Union, Optional, NamedTuple
 import requests
 import ctranslate2
@@ -244,18 +245,31 @@ class FasterWhisperPipeline(Pipeline):
                 with open("/content/output.wav", "rb") as f:
                     data = f.read()
                 API_URL = "https://api-inference.huggingface.co/models/theainerd/wav2vec2-large-xlsr-53-odia"
-                headers = {"Authorization": "Bearer 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"}    
-                response = requests.post(API_URL, headers=headers, data=data)    
-                out['text']=response.json()['text']   
+                headers = {"Authorization": "Bearer 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"}     
+                start_time=time.time()    
+                while True:    
+                    response = requests.post(API_URL, headers=headers, data=data)
+                    if(response.status_code==200):
+                        out['text']=response.json()['text']  
+                        break
+                    if(time.time()-start_time>120):
+                        raise Exception("Time out error in language detection module")     
+                 
             if(actual_language=='ml'):
                 save_audio("/content/output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
                 with open("/content/output.wav", "rb") as f:
                     data = f.read()
                 API_URL = "https://api-inference.huggingface.co/models/kurianbenoy/whisper_malayalam_largev2"
-                headers = {"Authorization": "Bearer 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"}    
-                response = requests.post(API_URL, headers=headers, data=data)    
-                print("malayalam it is")
-                out['text']=response.json()['text']   
+                headers = {"Authorization": "Bearer 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"}  
+                start_time=time.time()    
+                while True:    
+                    response = requests.post(API_URL, headers=headers, data=data)
+                    if(response.status_code==200):
+                        out['text']=response.json()['text']
+                        break
+                    if(time.time()-start_time>120):
+                        break     
+                    
 
 
             text = out['text']
@@ -386,10 +400,13 @@ class FasterWhisperPipeline(Pipeline):
             save_audio("/content/output.wav", audio, sr=16000)
             with open("/content/output.wav", "rb") as f:
                 data = f.read()
+            start_time=time.time()    
             while True:    
                 response = requests.post(API_URL, headers=headers, data=data)
                 if(response.status_code==200):
                     break
+                if(time.time()-start_time>120):
+                    raise Exception("Time out error in language detection module")
             #print(response.json()[0]['label'][:2].lower())
             actual_language=(response.json()[0]['label'][:2].lower())
             print(actual_language) 
