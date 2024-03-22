@@ -261,6 +261,7 @@ class FasterWhisperPipeline(Pipeline):
                     data = f.read()
                 API_URL = "https://api-inference.huggingface.co/models/gvs/wav2vec2-large-xlsr-malayalam"
                 headers = {"Authorization": "Bearer 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"}  
+                print("malayalam it is ")
                 start_time=time.time()    
                 while True:    
                     response = requests.post(API_URL, headers=headers, data=data)
