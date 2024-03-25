@@ -7,6 +7,8 @@ import ctranslate2
 import faster_whisper
 import numpy as np
 import torch
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+import torchaudio
 from transformers import Pipeline
 from transformers.pipelines.pt_utils import PipelineIterator
 
@@ -14,6 +16,13 @@ from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
 actual_language=""
+
+
+processor = Wav2Vec2Processor.from_pretrained("gvs/wav2vec2-large-xlsr-malayalam")
+model = Wav2Vec2ForCTC.from_pretrained("gvs/wav2vec2-large-xlsr-malayalam")
+
+resampler = torchaudio.transforms.Resample(48_000, 16_000)
+
 def find_numeral_symbol_tokens(tokenizer):
     numeral_symbol_tokens = []
     for i in range(tokenizer.eot):
@@ -241,19 +250,31 @@ class FasterWhisperPipeline(Pipeline):
             # print("out",out)
               
             if(actual_language=='or'):
-                save_audio("output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
-                with open("output.wav", "rb") as f:
-                    data = f.read()
-                API_URL = "https://api-inference.huggingface.co/models/theainerd/wav2vec2-large-xlsr-53-odia"
-                headers = {"Authorization": "Bearer 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"}     
-                start_time=time.time()    
-                while True:    
-                    response = requests.post(API_URL, headers=headers, data=data)
-                    if(response.status_code==200):
-                        out['text']=response.json()['text']  
-                        break
-                    if(time.time()-start_time>120):
-                        raise Exception("Time out error in language detection module")     
+                inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+
+                with torch.no_grad():
+                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
+
+                predicted_ids = torch.argmax(logits, dim=-1)
+                out['text']=processor.batch_decode(predicted_ids)
+
+                print("Prediction:",out['text'])
+
+
+
+                # save_audio("output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
+                # with open("output.wav", "rb") as f:
+                #     data = f.read()
+                # API_URL = "https://api-inference.huggingface.co/models/theainerd/wav2vec2-large-xlsr-53-odia"
+                # headers = {"Authorization": "Bearer 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"}     
+                # start_time=time.time()    
+                # while True:    
+                #     response = requests.post(API_URL, headers=headers, data=data)
+                #     if(response.status_code==200):
+                #         out['text']=response.json()['text']  
+                #         break
+                #     if(time.time()-start_time>120):
+                #         raise Exception("Time out error in language detection module")     
                  
             if(actual_language=='ml'):
                 save_audio("output.wav", audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)], sr=16000)
