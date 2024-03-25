@@ -271,8 +271,7 @@ class FasterWhisperPipeline(Pipeline):
 
                 predicted_ids = torch.argmax(logits, dim=-1)
                 out['text']=processor_ml.batch_decode(predicted_ids)
-            
-                    
+  
             text = out['text']
             print(f"idx: {idx}, text: {text}")
             if batch_size in [0, 1, None]:
