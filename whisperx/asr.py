@@ -270,7 +270,7 @@ class FasterWhisperPipeline(Pipeline):
                     logits = model_ml(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor_or.batch_decode(predicted_ids)
+                out['text']=processor_ml.batch_decode(predicted_ids)
                     
 
 
