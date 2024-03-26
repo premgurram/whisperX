@@ -7,7 +7,7 @@ import ctranslate2
 import faster_whisper
 import numpy as np
 import torch
-from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor,pipeline
 import torchaudio
 from transformers import Pipeline
 from transformers.pipelines.pt_utils import PipelineIterator
@@ -16,7 +16,8 @@ from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
 
-
+audio_classifier = pipeline(model="varunril/lan_det")
+print(audio_classifier("oria2.wav"))
 
 processor_or = Wav2Vec2Processor.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
 model_or = Wav2Vec2ForCTC.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
@@ -395,20 +396,9 @@ class FasterWhisperPipeline(Pipeline):
         if(actual_language==""):
             if audio.shape[0] > N_SAMPLES:
                 audio=audio[0:N_SAMPLES]
-            API_URL = "https://api-inference.huggingface.co/models/varunril/lan_det"
-            headers = {"Authorization": "Bearer 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"}
+            
             save_audio("output.wav", audio, sr=16000)
-            with open("output.wav", "rb") as f:
-                data = f.read()
-            start_time=time.time()    
-            while True:    
-                response = requests.post(API_URL, headers=headers, data=data)
-                if(response.status_code==200):
-                    break
-                if(time.time()-start_time>120):
-                    raise Exception("Time out error in language detection module")
-            #print(response.json()[0]['label'][:2].lower())
-            actual_language=(response.json()[0]['label'][:2].lower())
+            actual_language=(audio_classifier("output.wav")[0]['label'][:2].lower())
             
              
         if(actual_language=='or'):
