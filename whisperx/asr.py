@@ -17,7 +17,6 @@ from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
 
 audio_classifier = pipeline(model="varunril/lan_det")
-print(audio_classifier("oria2.wav"))
 
 processor_or = Wav2Vec2Processor.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
 model_or = Wav2Vec2ForCTC.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
