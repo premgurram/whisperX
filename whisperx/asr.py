@@ -16,7 +16,7 @@ from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
 
-
+audio_classifier = pipeline(model="varunril/lan_det")
 model_or, align_metadata,processor_or = load_align_model('or',device=None,model_name=None)
 model_ml, align_metadata,processor_ml = load_align_model('ml',device=None,model_name=None)
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
@@ -396,7 +396,7 @@ class FasterWhisperPipeline(Pipeline):
                 audio=audio[0:N_SAMPLES]
             
             save_audio("output.wav", audio, sr=16000)
-            audio_classifier = pipeline(model="varunril/lan_det")
+            
             actual_language=(audio_classifier("output.wav")[0]['label'][:2].lower())
             
              
