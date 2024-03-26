@@ -246,24 +246,24 @@ class FasterWhisperPipeline(Pipeline):
                 percent_complete = base_progress / 2 if combined_progress else base_progress
                 print(f"Progress: {percent_complete:.2f}%...")
             # print("out",out)
-            device=None  
+            # device=None  
             if(actual_language=='or'):
-                align_model, align_metadata,processor = load_align_model('or', device, model_name=align_model)
+                model, align_metadata,processor = load_align_model('or', device, model_name)
                 inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = align_model(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
                 out['text']=processor.batch_decode(predicted_ids)
 
                  
             if(actual_language=='ml'):
-                align_model, align_metadata,processor = load_align_model('ml', device, model_name=align_model)
+                model, align_metadata,processor = load_align_model('ml', device, model_name)
                 inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = align_model(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
                 out['text']=processor.batch_decode(predicted_ids)
