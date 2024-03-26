@@ -1,17 +1,31 @@
 import os
 import warnings
+import time
 from typing import List, Union, Optional, NamedTuple
-
+import requests
 import ctranslate2
 import faster_whisper
 import numpy as np
 import torch
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+import torchaudio
 from transformers import Pipeline
 from transformers.pipelines.pt_utils import PipelineIterator
 
-from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram
+from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_audio
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
+
+
+
+processor_or = Wav2Vec2Processor.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
+model_or = Wav2Vec2ForCTC.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
+
+processor_ml = Wav2Vec2Processor.from_pretrained("gvs/wav2vec2-large-xlsr-malayalam")
+model_ml = Wav2Vec2ForCTC.from_pretrained("gvs/wav2vec2-large-xlsr-malayalam")
+
+resampler = torchaudio.transforms.Resample(48_000, 16_000)
+actual_language=""
 
 def find_numeral_symbol_tokens(tokenizer):
     numeral_symbol_tokens = []
@@ -197,8 +211,10 @@ class FasterWhisperPipeline(Pipeline):
         print("vad_segments:", vad_segments)
         if self.tokenizer is None:
             print("No tokenizer found, language will be first be detected for each audio file (increases inference time).")
+            global actual_language
+            actual_language=""
             language = language or self.detect_language(audio)
-            languages_identified.add(language)
+            languages_identified.add(actual_language)
             task = task or "transcribe"
             self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                 self.model.model.is_multilingual, task=task,
@@ -206,8 +222,8 @@ class FasterWhisperPipeline(Pipeline):
         else:
             print("Using preset tokenizer.")
             language = language or self.tokenizer.language_code
-            print(f"Using preset language: {language}")
-            languages_identified.add(language)
+            print(f"Using preset language: {actual_language}")
+            languages_identified.add(actual_language)
             print(f"languages_identified: {languages_identified} and count is: {len(list(languages_identified))}")
             task = task or self.tokenizer.task
             if task != self.tokenizer.task or language != self.tokenizer.language_code:
@@ -217,7 +233,7 @@ class FasterWhisperPipeline(Pipeline):
                                                                     self.model.model.is_multilingual, task=task,
                                                                     language=language)
                 
-        print(f"Using tokenizer with task: {task} and language: {language}")
+        print(f"Using tokenizer with task: {task} and language: {actual_language}")
         if self.suppress_numerals:
             previous_suppress_tokens = self.options.suppress_tokens
             numeral_symbol_tokens = find_numeral_symbol_tokens(self.tokenizer)
@@ -236,14 +252,34 @@ class FasterWhisperPipeline(Pipeline):
                 percent_complete = base_progress / 2 if combined_progress else base_progress
                 print(f"Progress: {percent_complete:.2f}%...")
             # print("out",out)
+              
+            if(actual_language=='or'):
+                inputs = processor_or(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+
+                with torch.no_grad():
+                    logits = model_or(inputs.input_values, attention_mask=inputs.attention_mask).logits
+
+                predicted_ids = torch.argmax(logits, dim=-1)
+                out['text']=processor_or.batch_decode(predicted_ids)
+
+                 
+            if(actual_language=='ml'):
+                inputs = processor_ml(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+
+                with torch.no_grad():
+                    logits = model_ml(inputs.input_values, attention_mask=inputs.attention_mask).logits
+
+                predicted_ids = torch.argmax(logits, dim=-1)
+                out['text']=processor_ml.batch_decode(predicted_ids)
+  
             text = out['text']
             print(f"idx: {idx}, text: {text}")
             if batch_size in [0, 1, None]:
                 text = text[0]
 
             language = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
-            print(f"Detected language: {language} in the 8s chunk of audio...")
-            languages_identified.add(language)
+            print(f"Detected language: {actual_language} in the 8s chunk of audio...")
+            languages_identified.add(actual_language)
             segments.append(
                 {
                     "text": text,
@@ -331,17 +367,17 @@ class FasterWhisperPipeline(Pipeline):
         # if audio.shape[0] < N_SAMPLES:
         #     print("Warning: audio is shorter than 30s, language detection may be inaccurate.")
         model_n_mels = self.model.feat_kwargs.get("feature_size")
-        print("model_n_mels: ",model_n_mels)
+        # print("model_n_mels: ",model_n_mels)
         segment = log_mel_spectrogram(audio[:N_SAMPLES],
                                       n_mels=model_n_mels if model_n_mels is not None else 80,
                                       padding=0 if audio.shape[0] >= N_SAMPLES else N_SAMPLES - audio.shape[0])
-        print("segment: ",segment)
+        # print("segment: ",segment)
 
-        print("start encoder_output")
+        # print("start encoder_output")
         encoder_output = self.model.encode(segment)
-        print("encoder_output: ",encoder_output)
+        # print("encoder_output: ",encoder_output)
         results = self.model.model.detect_language(encoder_output)
-        print("lang_prob: ",results[0])
+        #print("lang_prob: ",results[0])
 
         #lang_prob:  [('<|ur|>', 0.6630859375), ('<|hi|>', 0.2255859375), ('<|en|>', 0.023590087890625), ('<|sd|>', 0.0146484375), ('<|mi|>', 0.00821685791015625), ('<|bn|>', 0.00719451904296875), ('<|jw|>', 0.006916046142578125), ('<|pa|>', 0.005645751953125), ('<|ar|>', 0.0034236907958984375), ('<|ne|>', 0.0026874542236328125), ('<|da|>', 0.002506256103515625), ('<|fa|>', 0.002506256103515625), ('<|sa|>', 0.002227783203125), ('<|la|>', 0.0018911361694335938), ('<|de|>', 0.0017910003662109375), ('<|cy|>', 0.00176239013671875), ('<|es|>', 0.001708984375), ('<|ps|>', 0.0016956329345703125), ('<|ms|>', 0.001567840576171875), ('<|nn|>', 0.0013513565063476562), ('<|ta|>', 0.0013408660888671875), ('<|haw|>', 0.0012798309326171875), ('<|sn|>', 0.0011653900146484375), ('<|my|>', 0.0010528564453125), ('<|mr|>', 0.0010280609130859375), ('<|gl|>', 0.0009002685546875), ('<|pt|>', 0.0008525848388671875), ('<|ru|>', 0.0008196830749511719), ('<|uk|>', 0.0008006095886230469), ('<|tr|>', 0.0007944107055664062), ('<|te|>', 0.0006537437438964844), ('<|yo|>', 0.0006093978881835938), ('<|be|>', 0.0005636215209960938), ('<|ja|>', 0.0005335807800292969), ('<|nl|>', 0.0004973411560058594), ('<|it|>', 0.0004782676696777344), ('<|gu|>', 0.0004634857177734375), ('<|br|>', 0.0004353523254394531), ('<|cs|>', 0.0003902912139892578), ('<|zh|>', 0.0003783702850341797), ('<|ko|>', 0.00033783912658691406), ('<|yi|>', 0.00031113624572753906), ('<|bs|>', 0.00030517578125), ('<|si|>', 0.00029921531677246094), ('<|fo|>', 0.00029468536376953125), ('<|fr|>', 0.0002865791320800781), ('<|el|>', 0.0002651214599609375), ('<|bo|>', 0.00022852420806884766), ('<|hy|>', 0.00021982192993164062), ('<|pl|>', 0.0002040863037109375), ('<|eu|>', 0.00019860267639160156), ('<|ro|>', 0.0001678466796875), ('<|af|>', 0.0001558065414428711), ('<|vi|>', 0.0001475811004638672), ('<|ht|>', 0.00013017654418945312), ('<|yue|>', 0.0001246929168701172), ('<|ml|>', 0.00011903047561645508), ('<|oc|>', 0.00011581182479858398), ('<|as|>', 0.00011539459228515625), ('<|km|>', 0.00011092424392700195), ('<|he|>', 0.0001042485237121582), ('<|az|>', 9.60230827331543e-05), ('<|lo|>', 9.566545486450195e-05), ('<|tl|>', 8.344650268554688e-05), ('<|th|>', 8.308887481689453e-05), ('<|kn|>', 7.593631744384766e-05), ('<|sw|>', 6.008148193359375e-05), ('<|id|>', 5.84721565246582e-05), ('<|ln|>', 5.137920379638672e-05), ('<|is|>', 3.88026237487793e-05), ('<|sr|>', 3.600120544433594e-05), ('<|mn|>', 2.962350845336914e-05), ('<|sv|>', 2.872943878173828e-05), ('<|sl|>', 2.7835369110107422e-05), ('<|no|>', 2.771615982055664e-05), ('<|ca|>', 2.6047229766845703e-05), ('<|ka|>', 2.372264862060547e-05), ('<|bg|>', 2.3365020751953125e-05), ('<|kk|>', 1.823902130126953e-05), ('<|mk|>', 1.424551010131836e-05), ('<|sq|>', 1.33514404296875e-05), ('<|sk|>', 8.463859558105469e-06), ('<|so|>', 7.569789886474609e-06), ('<|lv|>', 7.212162017822266e-06), ('<|tg|>', 7.152557373046875e-06), ('<|hu|>', 6.079673767089844e-06), ('<|fi|>', 4.649162292480469e-06), ('<|hr|>', 4.410743713378906e-06), ('<|am|>', 3.2186508178710938e-06), ('<|mt|>', 2.2649765014648438e-06), ('<|su|>', 1.7881393432617188e-06), ('<|et|>', 1.3113021850585938e-06), ('<|uz|>', 9.5367431640625e-07), ('<|ha|>', 8.940696716308594e-07), ('<|tt|>', 8.344650268554688e-07), ('<|mg|>', 5.364418029785156e-07), ('<|lt|>', 4.76837158203125e-07), ('<|tk|>', 4.172325134277344e-07), ('<|ba|>', 3.5762786865234375e-07), ('<|lb|>', 2.980232238769531e-07)]
 
@@ -355,8 +391,35 @@ class FasterWhisperPipeline(Pipeline):
                 selected_language = language
                 selected_language_probability = language_probability
                 break
-
-        print(f"Detected language: {selected_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
+        global actual_language
+        if(actual_language==""):
+            if audio.shape[0] > N_SAMPLES:
+                audio=audio[0:N_SAMPLES]
+            API_URL = "https://api-inference.huggingface.co/models/varunril/lan_det"
+            headers = {"Authorization": "Bearer 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"}
+            save_audio("output.wav", audio, sr=16000)
+            with open("output.wav", "rb") as f:
+                data = f.read()
+            start_time=time.time()    
+            while True:    
+                response = requests.post(API_URL, headers=headers, data=data)
+                if(response.status_code==200):
+                    break
+                if(time.time()-start_time>120):
+                    raise Exception("Time out error in language detection module")
+            #print(response.json()[0]['label'][:2].lower())
+            actual_language=(response.json()[0]['label'][:2].lower())
+            
+             
+        if(actual_language=='or'):
+            selected_language_probability=1
+        else:
+            if(actual_language=='ml'):
+                actual_language='ml'
+            else:
+                actual_language=selected_language        
+        
+        print(f"Detected language: {actual_language} ({selected_language_probability:.2f}) in the 8s chunk of audio...")
         return selected_language
 
 def load_model(whisper_arch,
