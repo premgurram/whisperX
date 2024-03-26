@@ -248,7 +248,7 @@ class FasterWhisperPipeline(Pipeline):
             # print("out",out)
             # device=None  
             if(actual_language=='or'):
-                model, align_metadata,processor = load_align_model('or', device, model_name)
+                model, align_metadata,processor = load_align_model('or')
                 inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
@@ -259,7 +259,7 @@ class FasterWhisperPipeline(Pipeline):
 
                  
             if(actual_language=='ml'):
-                model, align_metadata,processor = load_align_model('ml', device, model_name)
+                model, align_metadata,processor = load_align_model('ml')
                 inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
