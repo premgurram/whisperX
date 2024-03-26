@@ -11,7 +11,7 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor,pipeline
 import torchaudio
 from transformers import Pipeline
 from transformers.pipelines.pt_utils import PipelineIterator
-from alignment import load_align_model
+from .alignment import load_align_model
 from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_audio
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
