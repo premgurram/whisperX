@@ -11,18 +11,12 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor,pipeline
 import torchaudio
 from transformers import Pipeline
 from transformers.pipelines.pt_utils import PipelineIterator
-
+from alignment import load_align_model
 from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_audio
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
 
 audio_classifier = pipeline(model="varunril/lan_det")
-
-processor_or = Wav2Vec2Processor.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
-model_or = Wav2Vec2ForCTC.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
-
-processor_ml = Wav2Vec2Processor.from_pretrained("gvs/wav2vec2-large-xlsr-malayalam")
-model_ml = Wav2Vec2ForCTC.from_pretrained("gvs/wav2vec2-large-xlsr-malayalam")
 
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
 actual_language=""
@@ -252,25 +246,27 @@ class FasterWhisperPipeline(Pipeline):
                 percent_complete = base_progress / 2 if combined_progress else base_progress
                 print(f"Progress: {percent_complete:.2f}%...")
             # print("out",out)
-              
+            device=None  
             if(actual_language=='or'):
-                inputs = processor_or(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+                align_model, align_metadata,processor = load_align_model('or', device, model_name=align_model)
+                inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = model_or(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = align_model(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor_or.batch_decode(predicted_ids)
+                out['text']=processor.batch_decode(predicted_ids)
 
                  
             if(actual_language=='ml'):
-                inputs = processor_ml(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+                align_model, align_metadata,processor = load_align_model('ml', device, model_name=align_model)
+                inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = model_ml(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = align_model(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor_ml.batch_decode(predicted_ids)
+                out['text']=processor.batch_decode(predicted_ids)
   
             text = out['text']
             print(f"idx: {idx}, text: {text}")

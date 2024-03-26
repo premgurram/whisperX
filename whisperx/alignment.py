@@ -55,6 +55,8 @@ DEFAULT_ALIGN_MODELS_HF = {
     "ml": "gvs/wav2vec2-large-xlsr-malayalam",
     "no": "NbAiLab/nb-wav2vec2-1b-bokmaal",
     "nn": "NbAiLab/nb-wav2vec2-300m-nynorsk",
+    "or": "theainerd/wav2vec2-large-xlsr-53-odia",
+    "ml": "gvs/wav2vec2-large-xlsr-malayalam", 
 }
 
 
@@ -91,7 +93,7 @@ def load_align_model(language_code, device, model_name=None, model_dir=None):
 
     align_metadata = {"language": language_code, "dictionary": align_dictionary, "type": pipeline_type}
 
-    return align_model, align_metadata
+    return align_model, align_metadata,processor
 
 
 def align(
