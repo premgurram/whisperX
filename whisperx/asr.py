@@ -246,27 +246,29 @@ class FasterWhisperPipeline(Pipeline):
                 percent_complete = base_progress / 2 if combined_progress else base_progress
                 print(f"Progress: {percent_complete:.2f}%...")
             # print("out",out)
-            # device=None  
+            # device=  
+            model_or, align_metadata,processor_or = load_align_model('or',device,model_name)
+            model_ml, align_metadata,processor_ml = load_align_model('or',device,model_name)    
             if(actual_language=='or'):
-                model, align_metadata,processor = load_align_model('or',device=None,model_name=None)
+                model_or, align_metadata,processor_or = load_align_model('or',device,model_name)
                 inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = model_or(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor.batch_decode(predicted_ids)
+                out['text']=processor_or.batch_decode(predicted_ids)
 
                  
             if(actual_language=='ml'):
-                model, align_metadata,processor = load_align_model('ml',device=None,model_name=None)
-                inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+                model_ml, align_metadata,processor = load_align_model('ml',device,model_name)
+                inputs = processor_ml(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = model_ml(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor.batch_decode(predicted_ids)
+                out['text']=processor_ml.batch_decode(predicted_ids)
   
             text = out['text']
             print(f"idx: {idx}, text: {text}")
