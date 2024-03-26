@@ -226,7 +226,13 @@ class FasterWhisperPipeline(Pipeline):
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     self.model.model.is_multilingual, task=task,
                                                                     language=language)
-                
+        if(actual_language=='or'):
+            model, align_metadata,processor = load_align_model('or',device=None,model_name=None)
+        elif(actual_language=='ml'):
+            model, align_metadata,processor = load_align_model('ml',device=None,model_name=None)    
+
+
+
         print(f"Using tokenizer with task: {task} and language: {actual_language}")
         if self.suppress_numerals:
             previous_suppress_tokens = self.options.suppress_tokens
@@ -247,28 +253,27 @@ class FasterWhisperPipeline(Pipeline):
                 print(f"Progress: {percent_complete:.2f}%...")
             # print("out",out)
             # device=  
-            model_or, align_metadata,processor_or = load_align_model('or',device=None,model_name=None)
-            model_ml, align_metadata,processor_ml = load_align_model('ml',device=None,model_name=None)    
+           
             if(actual_language=='or'):
                 #model_or, align_metadata,processor_or = load_align_model('or',device,model_name)
-                inputs = processor_or(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+                inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = model_or(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor_or.batch_decode(predicted_ids)
+                out['text']=processor.batch_decode(predicted_ids)
 
                  
             if(actual_language=='ml'):
                 #model_ml, align_metadata,processor = load_align_model('ml',device,model_name)
-                inputs = processor_ml(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+                inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = model_ml(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor_ml.batch_decode(predicted_ids)
+                out['text']=processor.batch_decode(predicted_ids)
   
             text = out['text']
             print(f"idx: {idx}, text: {text}")
