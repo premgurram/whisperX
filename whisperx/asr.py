@@ -17,8 +17,8 @@ from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
 
 audio_classifier = pipeline(model="varunril/lan_det")
-model_or, align_metadata,processor_or = load_align_model('or',device="cuda",model_name=None)
-model_ml, align_metadata,processor_ml = load_align_model('ml',device="cuda",model_name=None)
+model_or, align_metadata,processor_or = load_align_model('or',device=None,model_name=None)
+model_ml, align_metadata,processor_ml = load_align_model('ml',device=None,model_name=None)
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
 actual_language=""
 
