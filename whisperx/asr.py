@@ -16,8 +16,9 @@ from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
 
-audio_classifier = pipeline(model="varunril/lan_det")
 
+model_or, align_metadata,processor_or = load_align_model('or',device=None,model_name=None)
+model_ml, align_metadata,processor_ml = load_align_model('ml',device=None,model_name=None)
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
 actual_language=""
 
@@ -226,12 +227,7 @@ class FasterWhisperPipeline(Pipeline):
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     self.model.model.is_multilingual, task=task,
                                                                     language=language)
-        if(actual_language=='or'):
-            model, align_metadata,processor = load_align_model('or',device=None,model_name=None)
-        elif(actual_language=='ml'):
-            model, align_metadata,processor = load_align_model('ml',device=None,model_name=None)    
-
-
+      
 
         print(f"Using tokenizer with task: {task} and language: {actual_language}")
         if self.suppress_numerals:
@@ -256,24 +252,24 @@ class FasterWhisperPipeline(Pipeline):
            
             if(actual_language=='or'):
                 #model_or, align_metadata,processor_or = load_align_model('or',device,model_name)
-                inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+                inputs = processor_or(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = model_or(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor.batch_decode(predicted_ids)
+                out['text']=processor_or.batch_decode(predicted_ids)
 
                  
             if(actual_language=='ml'):
                 #model_ml, align_metadata,processor = load_align_model('ml',device,model_name)
-                inputs = processor(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
+                inputs = processor_ml(audio[int(round(vad_segments[idx]['start'], 3)*16000):int(round(vad_segments[idx]['end'], 3)*16000)] , sampling_rate=16_000, return_tensors="pt", padding=True)
 
                 with torch.no_grad():
-                    logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
+                    logits = model_ml(inputs.input_values, attention_mask=inputs.attention_mask).logits
 
                 predicted_ids = torch.argmax(logits, dim=-1)
-                out['text']=processor.batch_decode(predicted_ids)
+                out['text']=processor_ml.batch_decode(predicted_ids)
   
             text = out['text']
             print(f"idx: {idx}, text: {text}")
@@ -400,6 +396,7 @@ class FasterWhisperPipeline(Pipeline):
                 audio=audio[0:N_SAMPLES]
             
             save_audio("output.wav", audio, sr=16000)
+            audio_classifier = pipeline(model="varunril/lan_det")
             actual_language=(audio_classifier("output.wav")[0]['label'][:2].lower())
             
              
