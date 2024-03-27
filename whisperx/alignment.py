@@ -57,6 +57,7 @@ DEFAULT_ALIGN_MODELS_HF = {
     "nn": "NbAiLab/nb-wav2vec2-300m-nynorsk",
     "or": "theainerd/wav2vec2-large-xlsr-53-odia",
     "ml": "gvs/wav2vec2-large-xlsr-malayalam", 
+    "ldet":"apparaomulpuriril/detect_language",
 }
 
 

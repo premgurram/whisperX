@@ -7,16 +7,16 @@ import ctranslate2
 import faster_whisper
 import numpy as np
 import torch
-from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor,pipeline
+from transformers import pipeline
 import torchaudio
 from transformers import Pipeline
 from transformers.pipelines.pt_utils import PipelineIterator
-from .alignment import load_align_model
+from .alignment import load_align_model,DEFAULT_ALIGN_MODELS_HF
 from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_audio
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
 
-audio_classifier = pipeline(model="varunril/lan_det")
+audio_classifier = pipeline(model=DEFAULT_ALIGN_MODELS_HF["ldet"])
 model_or, align_metadata,processor_or = load_align_model('or',device=None,model_name=None)
 model_ml, align_metadata,processor_ml = load_align_model('ml',device=None,model_name=None)
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
