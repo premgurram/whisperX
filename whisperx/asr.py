@@ -1,31 +1,17 @@
 import os
 import warnings
-import time
 from typing import List, Union, Optional, NamedTuple
-import requests
+
 import ctranslate2
 import faster_whisper
 import numpy as np
 import torch
-from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
-import torchaudio
 from transformers import Pipeline
 from transformers.pipelines.pt_utils import PipelineIterator
 
-from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram,save_audio
+from .audio import N_SAMPLES, SAMPLE_RATE, load_audio, log_mel_spectrogram
 from .vad import load_vad_model, merge_chunks
 from .types import TranscriptionResult, SingleSegment
-
-
-
-processor_or = Wav2Vec2Processor.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
-model_or = Wav2Vec2ForCTC.from_pretrained("theainerd/wav2vec2-large-xlsr-53-odia")
-
-processor_ml = Wav2Vec2Processor.from_pretrained("gvs/wav2vec2-large-xlsr-malayalam")
-model_ml = Wav2Vec2ForCTC.from_pretrained("gvs/wav2vec2-large-xlsr-malayalam")
-
-resampler = torchaudio.transforms.Resample(48_000, 16_000)
-actual_language=""
 
 def find_numeral_symbol_tokens(tokenizer):
     numeral_symbol_tokens = []
