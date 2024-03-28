@@ -22,6 +22,7 @@ model_ml, align_metadata,processor_ml = load_align_model('ml',device=None,model_
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
 actual_language=""
 
+
 def find_numeral_symbol_tokens(tokenizer):
     numeral_symbol_tokens = []
     for i in range(tokenizer.eot):
@@ -305,61 +306,7 @@ class FasterWhisperPipeline(Pipeline):
     '''
     solution for language detection for every chunk - not effective in transcription
     '''
-    # def transcribe(
-    #     self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, task=None, chunk_size=30,
-    #     print_progress=False, combined_progress=False
-    # ):
-    #     if isinstance(audio, str):
-    #         audio = load_audio(audio)
-
-    #     def data(audio, segments):
-    #         for seg in segments:
-    #             f1 = int(seg['start'] * SAMPLE_RATE)
-    #             f2 = int(seg['end'] * SAMPLE_RATE)
-    #             yield {'inputs': audio[f1:f2]}
-
-    #     vad_segments = self.vad_model({"waveform": torch.from_numpy(audio).unsqueeze(0), "sample_rate": SAMPLE_RATE})
-    #     vad_segments = merge_chunks(
-    #         vad_segments,
-    #         chunk_size,
-    #         onset=self._vad_params["vad_onset"],
-    #         offset=self._vad_params["vad_offset"],
-    #     )
-    #     print('vad_segments: ',vad_segments)
-
-    #     segments: List[SingleSegment] = []
-    #     for idx, vad_segment in enumerate(vad_segments):
-    #         segment_audio = audio[int(vad_segment['start'] * SAMPLE_RATE):int(vad_segment['end'] * SAMPLE_RATE)]
-
-    #         language = self.detect_language(segment_audio)
-    #         task = task or "transcribe"
-
-    #         self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
-    #                                                        True, task=task,
-    #                                                        language=language)
-    #         vad_segment = [vad_segment]
-    #         print('vad_SEgment',vad_segment)
-    #         for idx, out in enumerate(self.__call__(data(segment_audio, vad_segment), batch_size=batch_size, num_workers=num_workers)):
-    #             text = out['text']
-    #             # if batch_size in [0, 1, None]:
-    #             #     text = text[0]
-    #             segments.append(
-    #                 {
-    #                     "text": text,
-    #                     "start": round(vad_segment[idx]['start'], 3),
-    #                     "end": round(vad_segment[idx]['end'], 3),
-    #                     "language":self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
-    #                 }
-    #             )
-
-    #         if print_progress:
-    #             base_progress = ((idx + 1) / len(vad_segments)) * 100
-    #             percent_complete = base_progress / 2 if combined_progress else base_progress
-    #             print(f"Progress: {percent_complete:.2f}%...")
-    #         print(segments)
-
-    #     return {"segments": segments}
-
+    
 
     def detect_language(self, audio: np.ndarray):
         print("detect_language in WhisperXPipeline...")
