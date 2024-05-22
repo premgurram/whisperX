@@ -174,17 +174,14 @@ class FasterWhisperPipeline(Pipeline):
         self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, chunk_size=30, print_progress = False, combined_progress=False
     ) -> TranscriptionResult:
         
-        print("transcribe")
         languages_identified = set()
         if isinstance(audio, str):
             audio = load_audio(audio)
 
-        print("audio.shape",audio.shape)
         def data(audio, segments):
             for seg in segments:
                 f1 = int(seg['start'] * SAMPLE_RATE)
                 f2 = int(seg['end'] * SAMPLE_RATE)
-                # print(f2-f1)
                 yield {'inputs': audio[f1:f2]}
 
         vad_segments = self.vad_model({"waveform": torch.from_numpy(audio).unsqueeze(0), "sample_rate": SAMPLE_RATE})
@@ -194,7 +191,6 @@ class FasterWhisperPipeline(Pipeline):
             onset=self._vad_params["vad_onset"],
             offset=self._vad_params["vad_offset"],
         )
-        print("vad_segments:", vad_segments)
         if self.tokenizer is None:
             print("No tokenizer found, language will be first be detected for each audio file (increases inference time).")
             language = language or self.detect_language(audio)
@@ -204,9 +200,7 @@ class FasterWhisperPipeline(Pipeline):
                                                                 self.model.model.is_multilingual, task=task,
                                                                 language=language)
         else:
-            print("Using preset tokenizer.")
             language = language or self.tokenizer.language_code
-            print(f"Using preset language: {language}")
             languages_identified.add(language)
             print(f"languages_identified: {languages_identified} and count is: {len(list(languages_identified))}")
             task = task or self.tokenizer.task
@@ -235,9 +229,7 @@ class FasterWhisperPipeline(Pipeline):
                 base_progress = ((idx + 1) / total_segments) * 100
                 percent_complete = base_progress / 2 if combined_progress else base_progress
                 print(f"Progress: {percent_complete:.2f}%...")
-            # print("out",out)
             text = out['text']
-            print(f"idx: {idx}, text: {text}")
             if batch_size in [0, 1, None]:
                 text = text[0]
 
@@ -331,15 +323,11 @@ class FasterWhisperPipeline(Pipeline):
         # if audio.shape[0] < N_SAMPLES:
         #     print("Warning: audio is shorter than 30s, language detection may be inaccurate.")
         model_n_mels = self.model.feat_kwargs.get("feature_size")
-        print("model_n_mels: ",model_n_mels)
         segment = log_mel_spectrogram(audio[:N_SAMPLES],
                                       n_mels=model_n_mels if model_n_mels is not None else 80,
                                       padding=0 if audio.shape[0] >= N_SAMPLES else N_SAMPLES - audio.shape[0])
-        print("segment: ",segment)
 
-        print("start encoder_output")
         encoder_output = self.model.encode(segment)
-        print("encoder_output: ",encoder_output)
         results = self.model.model.detect_language(encoder_output)
         print("lang_prob: ",results[0])
 
