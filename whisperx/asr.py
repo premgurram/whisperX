@@ -234,7 +234,6 @@ class FasterWhisperPipeline(Pipeline):
                 text = text[0]
 
             language = self.detect_language(audio[idx*N_SAMPLES:(idx+1)*N_SAMPLES])
-            print(f"Detected language: {language} in the 8s chunk of audio...")
             languages_identified.add(language)
             segments.append(
                 {
